@@ -30,6 +30,10 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.build.selinux=1
 
+# Set Pixel blue light theme on Gboard
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.com.google.ime.theme_id=5
+
 # Don't compile SystemUITests
 EXCLUDE_SYSTEMUI_TESTS := true
 
