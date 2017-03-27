@@ -25,6 +25,10 @@ PRODUCT_PACKAGES += \
     Busybox \
     ThemeInterfacer
 
+# Copy Magisk zip
+    PRODUCT_COPY_FILES += \
+        vendor/nexus/prebuilt/zip/magisk.zip:system/addon.d/magisk.zip
+
 # Include explicitly to work around GMS issues
 PRODUCT_PACKAGES += \
     libprotobuf-cpp-full
