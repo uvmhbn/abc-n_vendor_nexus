@@ -1,0 +1,117 @@
+# Flash Kernel initialization script
+# Pieces taken from @anarkia1976, @franciscofranco, @frap129, and @flar2
+
+on post-fs
+   write /dev/cpuset/foreground/cpus 0-7
+   write /dev/cpuset/foreground/boost/cpus 0-7
+   write /dev/cpuset/background/cpus 0-7
+   write /dev/cpuset/system-background/cpus 0-7
+
+on property:sys.boot_completed=1
+   # according to Qcom this legacy value improves first launch latencies
+   # stock value is 512k
+   # from franciscofranco
+   setprop dalvik.vm.heapminfree 2m
+
+   # I/O scheduler - zen - 512kb
+   write /sys/block/mmcblk0/queue/scheduler zen
+   write /sys/block/mmcblk0/queue/read_ahead_kb 512
+
+   # Frequency values
+   write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 384000
+   write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1248000
+   write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 633600
+   write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 768000
+   # Force cores #6 and #7 offline
+   write /sys/module/msm_performance/parameters/max_cpus "-1:2"
+   # Little values
+   write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
+   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load 99
+   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay 30000
+   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate 30000
+   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq 600000
+   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_slack -1
+   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads "90 460800:85 600000:75 672000:80 768000:95 864000:99 960000:100 1248000:100"
+   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time 60000
+   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/align_windows 0
+   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/use_migration_notif 0
+   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/use_sched_load 0
+   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/max_freq_hysteresis 80000
+   # Big values
+   write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor interactive
+   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load 100
+   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay 0
+   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_rate 60000
+   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq 633600
+   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_slack -1
+   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads "99 633600:100 768000:100"
+   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time 60000
+   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/align_windows 0
+   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/use_migration_notif 0
+   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/use_sched_load 0
+   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/max_freq_hysteresis 80000
+   # Input boost values
+   write /sys/module/cpu_boost/parameters/input_boost_enabled 0
+   write /sys/module/cpu_boost/parameters/input_boost_freq "0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0"
+   write /sys/module/cpu_boost/parameters/input_boost_ms 0
+   # Other values
+   write /sys/module/msm_performance/parameters/touchboost 0
+   write /sys/class/kgsl/kgsl-3d0/devfreq/governor powersave
+   write /sys/class/leds/lcd-backlight/max_brightness 100
+   write /dev/cpuset/foreground/cpus 0-2,4-5
+   write /dev/cpuset/foreground/boost/cpus 4-5
+   write /dev/cpuset/top-app/cpus 0-5
+   write /sys/module/lazyplug/parameters/nr_possible_cores 6
+
+   # Make sure governor sys paths have the correct permissions
+   chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+   chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+   chown system system /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor
+   chmod 0664 /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor
+
+   # Make sure all the cpufreq sys paths have the correct permissions
+   chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+   chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+   chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+   chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+   chown system system /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq
+   chmod 0664 /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq
+   chown system system /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq
+   chmod 0664 /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq
+
+   # Lazyplug
+   write /sys/module/lazyplug/parameters/lazyplug_active 1
+
+   # Backlight dimmer
+   write /sys/module/mdss_fb/parameters/backlight_dimmer 1
+
+   # UKSM
+   write /sys/kernel/mm/uksm/run 1
+
+   # Wakelock dividers
+   write /sys/module/bcmdhd/parameters/wlrx_divide 8
+   write /sys/module/bcmdhd/parameters/wlctrl_divide 8
+
+   # re-enable retention idle state
+   # fix-up is merged in the Kernel
+   write /sys/module/lpm_levels/system/a53/cpu0/retention/idle_enabled 1
+   write /sys/module/lpm_levels/system/a53/cpu1/retention/idle_enabled 1
+   write /sys/module/lpm_levels/system/a53/cpu2/retention/idle_enabled 1
+   write /sys/module/lpm_levels/system/a53/cpu3/retention/idle_enabled 1
+   write /sys/module/lpm_levels/system/a57/cpu4/retention/idle_enabled 1
+   write /sys/module/lpm_levels/system/a57/cpu5/retention/idle_enabled 1
+   write /sys/module/lpm_levels/system/a57/cpu6/retention/idle_enabled 1
+   write /sys/module/lpm_levels/system/a57/cpu7/retention/idle_enabled 1
+   write /sys/module/lpm_levels/system/a53/a53-l2-retention/idle_enabled 1
+   write /sys/module/lpm_levels/system/a57/a57-l2-retention/idle_enabled 1
+
+   # bcmdhd wakeup sources
+   write /sys/module/wakeup/parameters/enable_wlan_rx_wake_ws 0
+   write /sys/module/wakeup/parameters/enable_wlan_ctrl_wake_ws 0
+   write /sys/module/wakeup/parameters/enable_wlan_wake_ws 0
+   write /sys/module/wakeup/parameters/enable_ipa_ws 0
+
+   # Special power script - executes three times under different SELinux contexts
+   exec u:r:init:s0 root root -- /init.special_power.sh
+   exec u:r:su:s0 root root -- /init.special_power.sh
+   exec u:r:supersu:s0 root root -- /init.special_power.sh
