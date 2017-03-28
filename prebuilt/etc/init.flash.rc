@@ -19,9 +19,22 @@ on property:sys.boot_completed=1
    write /sys/android_touch/doubletap2wake 1
    chmod 644 /sys/android_touch/doubletap2wake
 
-   # I/O scheduler - zen - 512kb
-   write /sys/block/mmcblk0/queue/scheduler zen
+   # Set vibration strength to 27 (50% in EXKM)
+   chown root root /sys/android_touch/vib_strength
+   chmod 666 /sys/android_touch/vib_strength
+   write /sys/android_touch/vib_strength 27
+   chmod 644 /sys/android_touch/vib_strength
+
+   # I/O scheduler - maple - 512kb
+   write /sys/block/mmcblk0/queue/scheduler maple
    write /sys/block/mmcblk0/queue/read_ahead_kb 512
+   write /sys/block/mmcblk0/queue/iosched/writes_starved 4
+   write /sys/block/mmcblk0/queue/iosched/fifo_batch 16
+   write /sys/block/mmcblk0/queue/iosched/sync_read_expire 350
+   write /sys/block/mmcblk0/queue/iosched/sync_write_expire 550
+   write /sys/block/mmcblk0/queue/iosched/async_read_expire 250
+   write /sys/block/mmcblk0/queue/iosched/async_write_expire 450
+   write /sys/block/mmcblk0/queue/iosched/sleep_latency_multiple 10
 
    # Frequency values
    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 384000
@@ -91,8 +104,21 @@ on property:sys.boot_completed=1
    # Backlight dimmer
    write /sys/module/mdss_fb/parameters/backlight_dimmer 1
 
+   # Sound settings
+   write /sys/kernel/sound_control/speaker_gain "25 25"
+   write /sys/kernel/sound_control/headphone_pa_gain "1 1"
+   write /sys/kernel/sound_control/mic_gain 10
+   write /sys/kernel/sound_control/headphone_gain "6 6"
+
    # UKSM
    write /sys/kernel/mm/uksm/run 1
+
+   # Very light LMK profile
+   write /sys/module/lowmemorykiller/parameters/minfree "7160,14320,21480,28640,35800,42960"
+
+   # Vibration strength
+   write /sys/class/timed_output/vibrator/vmax_mv_strong 2000
+   write /sys/class/timed_output/vibrator/vmax_mv_light 1650
 
    # Wakelock dividers
    write /sys/module/bcmdhd/parameters/wlrx_divide 8
