@@ -7,11 +7,7 @@ on post-fs
    write /dev/cpuset/background/cpus 0-7
    write /dev/cpuset/system-background/cpus 0-7
 
-on property:sys.boot_completed=1
-   # according to Qcom this legacy value improves first launch latencies
-   # stock value is 512k
-   # from franciscofranco
-   setprop dalvik.vm.heapminfree 2m
+on boot
 
    # Enable double-tap-to-wake.
    chown root root /sys/android_touch/doubletap2wake
@@ -25,62 +21,61 @@ on property:sys.boot_completed=1
    write /sys/android_touch/vib_strength 27
    chmod 644 /sys/android_touch/vib_strength
 
-   # I/O scheduler - maple - 512kb
-   write /sys/block/mmcblk0/queue/scheduler maple
-   write /sys/block/mmcblk0/queue/read_ahead_kb 512
-   write /sys/block/mmcblk0/queue/iosched/writes_starved 4
-   write /sys/block/mmcblk0/queue/iosched/fifo_batch 16
-   write /sys/block/mmcblk0/queue/iosched/sync_read_expire 350
-   write /sys/block/mmcblk0/queue/iosched/sync_write_expire 550
-   write /sys/block/mmcblk0/queue/iosched/async_read_expire 250
-   write /sys/block/mmcblk0/queue/iosched/async_write_expire 450
-   write /sys/block/mmcblk0/queue/iosched/sleep_latency_multiple 10
+on property:sys.boot_completed=1
+   # according to Qcom this legacy value improves first launch latencies
+   # stock value is 512k
+   # from franciscofranco
+   setprop dalvik.vm.heapminfree 2m
 
    # Frequency values
    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 384000
    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1248000
-   write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 633600
+   write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 384000
    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 768000
    # Force cores #6 and #7 offline
    write /sys/module/msm_performance/parameters/max_cpus "-1:2"
    # Little values
-   write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
-   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load 99
-   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay 0
-   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate 40000
-   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq 672000
-   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_slack 380000
-   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads "90 460800:85 600000:90 672000:95 768000:85 864000:99 960000:99 1248000:100"
-   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time 80000
-   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/align_windows 0
-   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/use_migration_notif 0
-   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/use_sched_load 0
-   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/max_freq_hysteresis 80000
+   write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor flash
+   write /sys/devices/system/cpu/cpu0/cpufreq/flash/go_hispeed_load 99
+   write /sys/devices/system/cpu/cpu0/cpufreq/flash/above_hispeed_delay 0
+   write /sys/devices/system/cpu/cpu0/cpufreq/flash/timer_rate 40000
+   write /sys/devices/system/cpu/cpu0/cpufreq/flash/hispeed_freq 672000
+   write /sys/devices/system/cpu/cpu0/cpufreq/flash/timer_slack 380000
+   write /sys/devices/system/cpu/cpu0/cpufreq/flash/target_loads "90 460800:85 600000:90 672000:95 768000:85 864000:99 960000:99 1248000:100"
+   write /sys/devices/system/cpu/cpu0/cpufreq/flash/min_sample_time 80000
+   write /sys/devices/system/cpu/cpu0/cpufreq/flash/align_windows 0
+   write /sys/devices/system/cpu/cpu0/cpufreq/flash/use_migration_notif 0
+   write /sys/devices/system/cpu/cpu0/cpufreq/flash/use_sched_load 0
+   write /sys/devices/system/cpu/cpu0/cpufreq/flash/max_freq_hysteresis 80000
+   write /sys/devices/system/cpu/cpu0/cpufreq/flash/fastlane 0
+   write /sys/devices/system/cpu/cpu0/cpufreq/flash/fastlane_threshold 0
+   write /sys/devices/system/cpu/cpu0/cpufreq/flash/powersave_bias 1
+   write /sys/devices/system/cpu/cpu0/cpufreq/flash/ignore_hispeed_on_notif 1
+   write /sys/devices/system/cpu/cpu0/cpufreq/flash/fast_ramp_down 1
+   write /sys/devices/system/cpu/cpu0/cpufreq/flash/screen_off_maxfreq 864000
    # Big values
-   write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor interactive
-   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load 99
-   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay 40000
-   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_rate 80000
-   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq 633600
-   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_slack 380000
-   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads "99 633600:99 768000:100"
-   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time 80000
-   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/align_windows 0
-   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/use_migration_notif 0
-   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/use_sched_load 0
-   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/max_freq_hysteresis 80000
+   write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor flash
+   write /sys/devices/system/cpu/cpu4/cpufreq/flash/go_hispeed_load 99
+   write /sys/devices/system/cpu/cpu4/cpufreq/flash/above_hispeed_delay 40000
+   write /sys/devices/system/cpu/cpu4/cpufreq/flash/timer_rate 80000
+   write /sys/devices/system/cpu/cpu4/cpufreq/flash/hispeed_freq 384000
+   write /sys/devices/system/cpu/cpu4/cpufreq/flash/timer_slack 380000
+   write /sys/devices/system/cpu/cpu4/cpufreq/flash/target_loads "99 384000:90 480000:95 633600:99 768000:100"
+   write /sys/devices/system/cpu/cpu4/cpufreq/flash/min_sample_time 80000
+   write /sys/devices/system/cpu/cpu4/cpufreq/flash/align_windows 0
+   write /sys/devices/system/cpu/cpu4/cpufreq/flash/use_migration_notif 0
+   write /sys/devices/system/cpu/cpu4/cpufreq/flash/use_sched_load 0
+   write /sys/devices/system/cpu/cpu4/cpufreq/flash/max_freq_hysteresis 80000
+   write /sys/devices/system/cpu/cpu4/cpufreq/flash/fastlane 0
+   write /sys/devices/system/cpu/cpu4/cpufreq/flash/fastlane_threshold 0
+   write /sys/devices/system/cpu/cpu4/cpufreq/flash/powersave_bias 1
+   write /sys/devices/system/cpu/cpu4/cpufreq/flash/ignore_hispeed_on_notif 1
+   write /sys/devices/system/cpu/cpu4/cpufreq/flash/fast_ramp_down 1
+   write /sys/devices/system/cpu/cpu4/cpufreq/flash/screen_off_maxfreq 633600
    # Input boost values
    write /sys/module/cpu_boost/parameters/input_boost_enabled 0
    write /sys/module/cpu_boost/parameters/input_boost_freq "0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0"
    write /sys/module/cpu_boost/parameters/input_boost_ms 0
-   # Other values
-   write /sys/module/msm_performance/parameters/touchboost 0
-   write /sys/class/kgsl/kgsl-3d0/devfreq/governor powersave
-   write /sys/class/leds/lcd-backlight/max_brightness 100
-   write /dev/cpuset/foreground/cpus 0-2,4-5
-   write /dev/cpuset/foreground/boost/cpus 4-5
-   write /dev/cpuset/top-app/cpus 0-5
-   write /sys/module/lazyplug/parameters/nr_possible_cores 6
 
    # Make sure governor sys paths have the correct permissions
    chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
@@ -98,44 +93,32 @@ on property:sys.boot_completed=1
    chown system system /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq
    chmod 0664 /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq
 
-   # Lazyplug
-   write /sys/module/lazyplug/parameters/lazyplug_active 1
+   # Disable core control, enable msm_thermal
+   write /sys/module/msm_thermal/core_control/enabled 0
+   write /sys/module/msm_thermal/parameters/enabled 1
+
+   # Enable Fingerprint boost
+   write /sys/kernel/fp_boost/enabled 1
 
    # Backlight dimmer
    write /sys/module/mdss_fb/parameters/backlight_dimmer 1
 
    # Sound settings
-   write /sys/kernel/sound_control/speaker_gain "25 25"
+   write /sys/kernel/sound_control/speaker_gain "23 23"
    write /sys/kernel/sound_control/headphone_pa_gain "1 1"
    write /sys/kernel/sound_control/mic_gain 10
    write /sys/kernel/sound_control/headphone_gain "6 6"
-
-   # UKSM
-   write /sys/kernel/mm/uksm/run 1
-
-   # Very light LMK profile
-   write /sys/module/lowmemorykiller/parameters/minfree "7160,14320,21480,28640,35800,42960"
 
    # Vibration strength
    write /sys/class/timed_output/vibrator/vmax_mv_strong 2000
    write /sys/class/timed_output/vibrator/vmax_mv_light 1650
 
-   # Wakelock dividers
-   write /sys/module/bcmdhd/parameters/wlrx_divide 8
-   write /sys/module/bcmdhd/parameters/wlctrl_divide 8
+   # I/O scheduler - maple - 512kb
+   write /sys/block/mmcblk0/queue/scheduler maple
+   write /sys/block/mmcblk0/queue/read_ahead_kb 512
 
-   # re-enable retention idle state
-   # fix-up is merged in the Kernel
-   write /sys/module/lpm_levels/system/a53/cpu0/retention/idle_enabled 1
-   write /sys/module/lpm_levels/system/a53/cpu1/retention/idle_enabled 1
-   write /sys/module/lpm_levels/system/a53/cpu2/retention/idle_enabled 1
-   write /sys/module/lpm_levels/system/a53/cpu3/retention/idle_enabled 1
-   write /sys/module/lpm_levels/system/a57/cpu4/retention/idle_enabled 1
-   write /sys/module/lpm_levels/system/a57/cpu5/retention/idle_enabled 1
-   write /sys/module/lpm_levels/system/a57/cpu6/retention/idle_enabled 1
-   write /sys/module/lpm_levels/system/a57/cpu7/retention/idle_enabled 1
-   write /sys/module/lpm_levels/system/a53/a53-l2-retention/idle_enabled 1
-   write /sys/module/lpm_levels/system/a57/a57-l2-retention/idle_enabled 1
+   # Don't treat storage as rotational
+   write /sys/block/mmcblk0/queue/rotational 0
 
    # bcmdhd wakeup sources
    write /sys/module/wakeup/parameters/enable_wlan_rx_wake_ws 0
